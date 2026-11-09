@@ -1,0 +1,35 @@
+# ABSTRACT 
+class Person:
+    def __init__(self, name, room_no):          # constructor
+        self.name = name                        # public attribute
+        self.room_no = room_no
+
+    def get_role(self):                         # abstract method (children must override)
+        raise NotImplementedError("Child class must define get_role()")
+
+    def __str__(self):
+        return self.get_role() + " " + self.name + " (Room " + str(self.room_no) + ")"
+
+
+# INHERITANCE
+class Student(Person):
+    def __init__(self, name, room_no):
+        super().__init__(name, room_no)         # call the parent constructor
+        self.__strikes = 0                      # private: encapsulation
+        self.__earnings = 0
+
+    def get_role(self):                         # overriding
+        return "Student"
+
+    def get_strikes(self):                      # getter
+        return self.__strikes
+
+    def add_strike(self, amount=1):             # amount=1 -> simple overloading by default value
+        self.__strikes += amount
+
+    def get_earnings(self):
+        return self.__earnings
+
+    def add_earnings(self, amount):
+        if amount > 0:                          # validation protects the data
+            self.__earnings += amount
