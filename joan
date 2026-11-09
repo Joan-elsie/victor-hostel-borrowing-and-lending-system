@@ -1,0 +1,11 @@
+# ABSTRACT 
+class Person:
+    def __init__(self, name, room_no):          # constructor
+        self.name = name                        # public attribute
+        self.room_no = room_no
+
+    def get_role(self):                         # abstract method (children must override)
+        raise NotImplementedError("Child class must define get_role()")
+
+    def __str__(self):
+        return self.get_role() + " " + self.name + " (Room " + str(self.room_no) + ")"
