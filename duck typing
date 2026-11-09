@@ -1,0 +1,108 @@
+# DUCK TYPING: eligibility rules share NO parent class 
+# Each rule only needs a check() method. It returns None if OK, or a message.
+class NotOwnerRule:
+    def check(self, student, item, days):
+        if student is item.owner:
+            return "You cannot borrow your own item."
+
+
+
+
+class AvailableRule:
+    def check(self, student, item, days):
+        if not item.is_available():
+            return "Item is not available."
+
+
+
+
+class MaxDaysRule:
+    def check(self, student, item, days):
+        if days < 1 or days > item.max_days:
+            return "Allowed period is 1 to " + str(item.max_days) + " days."
+
+
+
+
+class StrikeRule:
+    def check(self, student, item, days):
+        if student.get_strikes() >= 3:
+            return "Too many strikes (3). You cannot borrow."
+
+
+
+
+# DUCK TYPING
+class Cash:
+    def pay(self, amount):
+        return "UGX " + str(amount) + " paid in cash"
+
+
+
+
+class MobileMoney:
+    def pay(self, amount):
+        return "UGX " + str(amount) + " paid by mobile money"
+
+
+
+
+# Borrowing: record of one loan 
+class Borrowing:
+    def __init__(self, item, borrower, days, code):
+        self.item = item
+        self.borrower = borrower
+        self.days = days
+        self.fee = item.calculate_fee(days)     # polymorphism: each item calculates its o
+        self.deposit = item.deposit()
+        self.status = "PENDING"
+        self.__code = code                      # private handover code
+        self.due_day = None
+
+
+    def get_code(self):
+        return self.__code
+
+
+    def approve(self, actor):
+        if actor is not self.item.owner:        # only the owner may approve
+            return "Only the owner can approve."
+        self.status = "APPROVED"
+        return "Approved. Borrower's handover code: " + str(self.__code)
+
+
+    def collect(self, actor, code, payment, today):
+        if actor is not self.item.owner or self.status != "APPROVED":
+            return "Cannot release item."
+        if code != self.__code:
+            return "Wrong code. Item NOT released."
+        total = self.fee + self.deposit
+        receipt = payment.pay(total)            # works with ANY object that has pay()
+        self.status = "COLLECTED"
+        self.due_day = today + self.days
+        self.item.set_available(False)
+        return "Released. " + receipt + " (fee " + str(self.fee) + " + deposit " + str(sel
+
+
+    def return_item(self, actor, today, damaged=False):
+        if actor is not self.item.owner or self.status != "COLLECTED":
+            return "Cannot confirm return."
+        self.status = "RETURNED"
+        self.item.set_available(True)
+        self.item.owner.add_earnings(self.fee)
+        notes = []
+        if today > self.due_day:                # late return
+            self.borrower.add_strike(1)
+            notes.append("late: +1 strike")
+        if damaged:                             # damaged: deposit is kept
+            self.borrower.add_strike(2)
+            notes.append("damaged: deposit forfeited, +2 strikes")
+        else:
+            notes.append("deposit refunded")
+        return "Returned. " + ", ".join(notes)
+
+
+    def __str__(self):
+        return self.item.name + " -> " + self.borrower.name + " | " + str(self.days) + \
+               " day(s) | fee " + str(self.fee) + " | " + self.status
+

@@ -1,0 +1,39 @@
+# DEMO 
+def show(title, things):
+    print("\n" + title)
+    for t in things:
+        print("  " + str(t))
+    if not things:
+        print("  (nothing found)")
+
+
+hostel = Hostel("Victor Hostel")
+claire, lyn, joan = Student("Claire", 3), Student("Lyn", 7), Student("Joan", 12)
+for s in (claire, lyn, joan):
+    print(hostel.register(s))
+print(hostel.register(Student("Outsider", 25)))
+
+iron = HouseholdItem("Flat iron", claire, fee_per_day=2000, max_days=3, value=60000)
+calc = ElectronicItem("Calculator", joan, fee_per_day=1000, max_days=5, value=50000)
+shoes = ClothingItem("Formal shoes", joan, fee_per_day=1500, max_days=2, value=80000)
+bank = HouseholdItem("Power bank", claire, max_days=1)          # free item
+for i in (iron, calc, shoes, bank):
+    hostel.add_item(i)
+
+show("All available items:", hostel.search())
+show("Search 'iron':", hostel.search("iron"))
+show("Items costing 1000/day or less:", hostel.search(max_fee=1000))
+
+print("\n--- Lyn borrows Sarah's flat iron for 2 days ---")
+loan, msg = hostel.request(lyn, iron, 2)
+print(msg)
+print(loan.approve(claire))
+print(loan.collect(claire, 1234, Cash(), today=1))                  # wrong code
+print(loan.collect(claire, loan.get_code(), MobileMoney(), today=1))
+print(hostel.request(joan, iron, 1)[1])                            # blocked: lent out
+print(hostel.request(lyn, shoes, 9)[1])                           # blocked: too many days
+print(loan.return_item(claire, today=5))                            # 2 days late
+
+show("Borrowing records:", hostel.borrowings)
+print("\nClaire earned UGX", claire.get_earnings())
+print("Lyn's strikes:", lyn.get_strikes())
