@@ -1,0 +1,45 @@
+# ABSTRACT
+class Item:
+    def __init__(self, name, owner, fee_per_day=0, max_days=3, value=0):
+        self.name = name
+        self.owner = owner                      # a Student object
+        self.fee_per_day = fee_per_day          # 0 means free
+        self.max_days = max_days
+        self.value = value
+        self._available = True                  # protected: for this class and children
+
+    def calculate_fee(self, days):              # abstract method
+        raise NotImplementedError("Child class must define calculate_fee()")
+
+    def deposit(self):                          # refundable security deposit
+        return self.value // 2
+
+    def is_available(self):
+        return self._available
+
+    def set_available(self, status):
+        self._available = status
+
+    def __str__(self):
+        fee = "FREE" if self.fee_per_day == 0 else str(self.fee_per_day) + "/day"
+        state = "available" if self._available else "lent out"
+        return self.name + " | " + fee + " | max " + str(self.max_days) + " days | " + \
+               self.owner.name + " | " + state
+
+
+# INHERITANCE + OVERRIDING + POLYMORPHISM 
+class ElectronicItem(Item):
+    def calculate_fee(self, days):
+        fee = self.fee_per_day * days
+        return fee + fee // 20 if fee > 0 else 0        # +5% damage cover
+
+
+class ClothingItem(Item):
+    def calculate_fee(self, days):
+        fee = self.fee_per_day * days
+        return fee + 500 if fee > 0 else 0              # +500 cleaning charge
+
+
+class HouseholdItem(Item):
+    def calculate_fee(self, days):
+        return self.fee_per_day * days
